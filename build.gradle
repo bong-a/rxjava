@@ -6,6 +6,7 @@
  * User Manual available at https://docs.gradle.org/6.0/userguide/tutorial_java_projects.html
  */
 
+
 plugins {
     // Apply the java plugin to add support for Java
     id 'java'
@@ -33,6 +34,9 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'com.study.rxjava.App'
+    mainClassName = 'com.study.rxjava.L11_FlowableSample'
 
+}
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
