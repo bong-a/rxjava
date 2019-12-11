@@ -5,6 +5,8 @@ import io.reactivex.schedulers.Schedulers;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+import java.util.Date;
+
 public class L11_FlowableSample {
     public static void main(String[] args) throws InterruptedException {
         Flowable<String> flowable = Flowable.create(new FlowableOnSubscribe<String>() {
@@ -33,13 +35,13 @@ public class L11_FlowableSample {
                         //Subscription을 Subscriber에 보관한다.
                         this.subscription=subscription;
                         //받을 데이터 개수 요청
-                        this.subscription.request(1L);
+                        this.subscription.request(Long.MAX_VALUE);
                     }
 
                     @Override
                     public void onNext(String s) {
                         String threadName = Thread.currentThread().getName();
-                        System.out.println(threadName+" : "+s);
+                        System.out.println(new Date()+":"+threadName+" : "+s);
                         this.subscription.request(1L);
                     }
 

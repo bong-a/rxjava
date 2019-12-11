@@ -34,7 +34,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'com.study.rxjava.L11_FlowableSample'
+    mainClassName = 'com.study.rxjava.L21_ViolatedReactiveStreamsSample'
 
 }
 tasks.withType(JavaCompile) {
