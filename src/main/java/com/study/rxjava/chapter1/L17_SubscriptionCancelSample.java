@@ -1,4 +1,4 @@
-package com.study.rxjava;
+package com.study.rxjava.chapter1;
 
 import io.reactivex.Flowable;
 import org.reactivestreams.Subscriber;

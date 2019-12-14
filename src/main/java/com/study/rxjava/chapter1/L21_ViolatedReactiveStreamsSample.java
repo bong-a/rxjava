@@ -1,4 +1,4 @@
-package com.study.rxjava;
+package com.study.rxjava.chapter1;
 
 import io.reactivex.Flowable;
 import org.reactivestreams.Subscriber;
@@ -7,7 +7,7 @@ import org.reactivestreams.Subscription;
 public class L21_ViolatedReactiveStreamsSample {
     public static void main(String[] args) {
         Flowable.range(1,3)
-                .subscribe(new Subscriber<Integer>() {
+                .subscribe(new Subscriber<>() {
                     @Override
                     public void onSubscribe(Subscription s) {
                         System.out.println("onSubscribe : start");
@@ -22,7 +22,7 @@ public class L21_ViolatedReactiveStreamsSample {
 
                     @Override
                     public void onError(Throwable t) {
-                        System.out.println("onError"+t);
+                        System.out.println("onError" + t);
                     }
 
                     @Override
