@@ -29,12 +29,14 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     // https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava
     compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.2.15'
+    // https://mvnrepository.com/artifact/junit/junit
+    compile group: 'junit', name: 'junit', version: '4.12'
 
 }
 
 application {
     // Define the main class for the application.
-    mainClassName = 'com.study.rxjava.L21_ViolatedReactiveStreamsSample'
+    mainClassName = 'com.study.rxjava.chapter2.L12_AtomicCounterSample'
 
 }
 tasks.withType(JavaCompile) {
