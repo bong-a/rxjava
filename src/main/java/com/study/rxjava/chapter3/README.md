@@ -88,3 +88,8 @@ RxJava에서는 생산자 자체가 데이터 집합체이므로 데이터를 �
 
 예제 : [두개 다른 식당이 있고 각각의 식당에서 메뉴를 구현한다.](iterator/MenuTestDrive.java)
 
+출처
+- https://gmlwjd9405.github.io/2018/07/08/observer-pattern.html
+- https://jusungpark.tistory.com/25
+
+
