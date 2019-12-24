@@ -11,6 +11,11 @@ public class L09_ObserveOnSample {
         Flowable<Long> flowable = Flowable.interval(300L, TimeUnit.MILLISECONDS)
                 .doOnNext(aLong -> System.out.println("doOnNext : "+aLong))
                 .onBackpressureDrop();
+
+        //         0,   1,  2,  3,  4,  5 ....
+        //         request(1)      request(1)
+        //buffer : 0                4
+        //소비자     0                4
         flowable.observeOn(Schedulers.computation(),false,2)
                 .subscribe(new ResourceSubscriber<Long>() {
                     @Override
