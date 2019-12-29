@@ -280,3 +280,70 @@ public class L14_CounterWithMergeSample {
 ```
 
 
+
+##  3.3 에러처리
+
+RxJava에서 에러가 발생했을 때 대응하는 방법으로 다음 세 가지가 있다.
+
+- 소비자에게 에러통지하기
+- 처리 작업 재시도
+- 대체 데이터 통지
+
+RxJava에서 에러 감지했을 때 특정한 에러 처리 수단을 제공하지만 에러 통지를 받아도 회복 할 수 없는 VirtualMachineError 같은 종류의 에러는 별도 처리 없이 그대로 던지기도 한다.
+
+통지 처리 작업 중에 발생한 에러를 소비자에게 에러로 통지할지 그대로 자바 예이나 에러로 던질지는 Exception 클래스의 throwIfFatal 메서드에 정의되어 있다.
+
+### 3.3.1 소비자에게 에러 통지하기
+
+RxJava는 통지 처리 중에 에러가 발생하면 소비자에게 에러를 통지해 이 에러 통지를 받은 소비자가 에러에 대응하는 메커니즘을 제공한다.
+
+또한, 명시적으로 에어 통지 기능을 구현하지 않아도 처리 도중에 에러가 발생하면 에러를 던지고 처리를 중단하는 것이 아니라 기본적으로 소비자에게 발생한 에러를 통지하게 이루어져 있다.
+
+이는 특히 비동기 처리 중에 발생한 에러가 주 처리 작업을 수행하는 스레드에 반드시 전달되도록 에러 각체가 담긴 에러 메세지를 소비자에게 통지해 적절한 에러 처리를 하게 한다.
+
+- 에러 통지 시 어떤 처리를 할지 설정하지 않은 subscribe메서드(onNext)로 구독할 때는 에러가 발생해도 이 에러의 스택 트레이스만 출력할 뿐 별도의 에러 처리를 하지 않는다. 그래서 에러가 발생했다는 것을 인식하지 못해 아무런 에러 처리를 없이 그대로 구독 후의 처리 작업을 진행하게 되므로 주의해야 한다.
+
+### 3.2.2 처리 재시도
+
+에러가 발생하면 생산자의 처리 작업을 처음부터 다시 시도함으로써 에러 상황에서 회복해 정상적인 결과를 얻는 방법을 제공 -> retry 메서드 제공
+
+- 이때 소비자에게 에러를 통지 않는다.
+- 네트워크가 순간적으로 중단돼 처리 작업이 실패해도 다시 실행하면 올바른 결과를 얻을 수 있을 때 유용하다.
+
+예제 : [재시도하는 예제](./L16_RetrySample.java)
+
+ #### 주요 재시도 연산자
+
+- retry(long times)
+- retry(Predicate<? super Throwable> predicate)
+- retry(long times, Predicate<? super Throwable> predicate)
+- retryUntil(BooleanSupplier stop)
+- retryWhen(Function<? super Flowable/Observale<Throwable>,? extends Publisher/ObservableSource<?>> handler)
+
+retryUntil 메서드는 재시도를 판정하는 함수형 인터페이스를 인자로 받아 이 함수형 인터페이스가 false르 반환할 때만 재시도 하는 연산자이다. true를 반환하면 재시도하지 않고 에러를 통지한다. 
+
+이 함수형 인터페이스는 인자를 아무것도 받지 않기 때문에 시간과 같이 생산자와 소비자 사이의 관계 외부에 있는 조건에 따라 재시도할지 판단한다. 그래서 서로 다른 스레드 사이에서 공유되는 객체로 판정할때는 제대로 동기화하지 않으면 정확한 판정이 이루어지지 않으므로 주의해야한다.
+
+retryWhen 메서드는 Flowable/Observable을 인자로 받아 그 결과로 Flowable/Observable 반환해 재시도할지, 완료 통지할지, 에러 통지할지 결정한다.
+
+데이터를 통지 -> 재시도, 완료 통지 -> 완료 통지, 에러 통지 -> 에러 통지
+
+이 특성을 이용해 데이터 통지를 늦춰 재시도 시점을 늦출 수도 있다.
+
+
+
+### 3.3.3 대체 데이터 통지
+
+에러가 발생하면 대체 데이터를 통지해 처리 작업을 에러로 끝내지 않고 완료하게 하는 에러 처리 방법
+
+예제 : [에러가 발생하면 대체 데이터를 통지하는 예제](./L17_OnErrorResumeItemSample.java)
+
+#### 에러가 발생했을 때 데이터를 통지하는 주요 연산자
+
+- onErrorReturnItem(T item)
+- onErrorReturn(Function<? super Throwable, ? extends T> valueSupplier)
+- onErrorResumeNext(Publisher/ObservableSource<? extends T > next)
+- onErrorResumeNext(Function<? super Throwable,? extends Publisher,ObservableSource<? extends T>> resumeFunction)
+- onExceptionResumeNext(Publisher/ObservableSource<? extends T> next)
+
+ 
