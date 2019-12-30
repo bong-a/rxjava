@@ -346,4 +346,49 @@ retryWhen 메서드는 Flowable/Observable을 인자로 받아 그 결과로 Flo
 - onErrorResumeNext(Function<? super Throwable,? extends Publisher,ObservableSource<? extends T>> resumeFunction)
 - onExceptionResumeNext(Publisher/ObservableSource<? extends T> next)
 
+ ## 3.4 리소스 관리
+ ### 3.4.1 using 메서드
+ RxJava에서 리소스 관리하는 using 메소드
+ 리소스의 라이프 사이클에 맞춘 Flowable/Observable 생성 할 수 있다.
+ ```java
+using(
+    Callable<? extends D> resourceSupplier, // 리소스 얻기
+    Function<? super D, ? extends Publisher<? extends T>> sourceSupplier, // 리소스 얻은 데이터를 사용하느 Flowable/Observable 생성
+    Consumer<? super D> resourceDisposer // 리소스 해제
+) 
+```
+
+### 3.4.2 FlowableEmitter/ObservableEmitter
+#### setCancellable 메서드
+Cancellable 인터페이스를 설정하는 메서드
+구독이 취소될 때 처리 작업을 하는 메서드 하나만 있는 함수형 인터페이스이다.
+```java
+public interface Cancellable{
+    void cancel() throws Exception;
+}
+```
+ setCancellable 메서드로 Cancellable 인터페이스 설정 해두면 완료 통지, 에러통지 한 후 , 그리고 구독을 중도에 해지할 때 cancel 메서드가 실행된다. 따라서 create 메서드로 생성한 Flowable/Observable이 정상적으로 종료되거나 붎필요해지면 구독을 해지할수 있게 재데로 관리한다면 외부에서 별도로 리소스 관리하지 않아도 된다.
  
+#### setDisposable 메서드
+Disposable 인터페이스 설정하는 메서드
+```java
+public interface Disposable {
+    /**
+     * Dispose the resource, the operation should be idempotent.
+     */
+    void dispose();
+
+    /**
+     * Returns true if this resource has been disposed.
+     * @return true if this resource has been disposed
+     */
+    boolean isDisposed();
+}
+``` 
+setDisposable 메서드로 Disposable 인터페이스 설정 해두면 완료 통지, 에러통지 한 후 , 그리고 구독을 중도에 해지할 때 dispose 메서드가 실행된다. 
+따라서 create 메서드로 생성한 Flowable/Observable이 정상적으로 종료되거나 붎필요해지면 구독을 해지할수 있게 재데로 관리한다면 외부에서 별도로 리소스 관리하지 않아도 된다.
+
+#### 주의할 점
+- 구독 중도에 해지 했을 때 통지하는 처리 작업이 이미 파기한 리소스에 접근하면 에러 발생 <br/>
+    -> 리소스 접근할 때 리소스가 파기되었는지 체크하거나 파기됐다면 신속하게 처리를 멈추는 등의 대응이 필요
+- Cancellable/Disposable을 FlowableEmitter/ObservableEmitter에 함께 설정 불가능
