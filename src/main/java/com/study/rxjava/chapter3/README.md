@@ -320,13 +320,15 @@ RxJava는 통지 처리 중에 에러가 발생하면 소비자에게 에러를 
 - retryUntil(BooleanSupplier stop)
 - retryWhen(Function<? super Flowable/Observale<Throwable>,? extends Publisher/ObservableSource<?>> handler)
 
-retryUntil 메서드는 재시도를 판정하는 함수형 인터페이스를 인자로 받아 이 함수형 인터페이스가 false르 반환할 때만 재시도 하는 연산자이다. true를 반환하면 재시도하지 않고 에러를 통지한다. 
+retryUntil 메서드는 재시도를 판정하는 함수형 인터페이스를 인자로 받아 이 함수형 인터페이스가 false로 반환할 때만 재시도 하는 연산자이다. true를 반환하면 재시도하지 않고 에러를 통지한다. 
 
 이 함수형 인터페이스는 인자를 아무것도 받지 않기 때문에 시간과 같이 생산자와 소비자 사이의 관계 외부에 있는 조건에 따라 재시도할지 판단한다. 그래서 서로 다른 스레드 사이에서 공유되는 객체로 판정할때는 제대로 동기화하지 않으면 정확한 판정이 이루어지지 않으므로 주의해야한다.
 
 retryWhen 메서드는 Flowable/Observable을 인자로 받아 그 결과로 Flowable/Observable 반환해 재시도할지, 완료 통지할지, 에러 통지할지 결정한다.
 
-데이터를 통지 -> 재시도, 완료 통지 -> 완료 통지, 에러 통지 -> 에러 통지
+- 데이터를 통지 -> 재시도
+- 완료 통지 -> 완료 통지
+- 에러 통지 -> 에러 통지
 
 이 특성을 이용해 데이터 통지를 늦춰 재시도 시점을 늦출 수도 있다.
 
@@ -350,13 +352,14 @@ retryWhen 메서드는 Flowable/Observable을 인자로 받아 그 결과로 Flo
  ### 3.4.1 using 메서드
  RxJava에서 리소스 관리하는 using 메소드
  리소스의 라이프 사이클에 맞춘 Flowable/Observable 생성 할 수 있다.
+
  ```java
 using(
     Callable<? extends D> resourceSupplier, // 리소스 얻기
     Function<? super D, ? extends Publisher<? extends T>> sourceSupplier, // 리소스 얻은 데이터를 사용하느 Flowable/Observable 생성
     Consumer<? super D> resourceDisposer // 리소스 해제
 ) 
-```
+ ```
 
 ### 3.4.2 FlowableEmitter/ObservableEmitter
 #### setCancellable 메서드
@@ -368,7 +371,7 @@ public interface Cancellable{
 }
 ```
  setCancellable 메서드로 Cancellable 인터페이스 설정 해두면 완료 통지, 에러통지 한 후 , 그리고 구독을 중도에 해지할 때 cancel 메서드가 실행된다. 따라서 create 메서드로 생성한 Flowable/Observable이 정상적으로 종료되거나 붎필요해지면 구독을 해지할수 있게 재데로 관리한다면 외부에서 별도로 리소스 관리하지 않아도 된다.
- 
+
 #### setDisposable 메서드
 Disposable 인터페이스 설정하는 메서드
 ```java
@@ -384,7 +387,7 @@ public interface Disposable {
      */
     boolean isDisposed();
 }
-``` 
+```
 setDisposable 메서드로 Disposable 인터페이스 설정 해두면 완료 통지, 에러통지 한 후 , 그리고 구독을 중도에 해지할 때 dispose 메서드가 실행된다. 
 따라서 create 메서드로 생성한 Flowable/Observable이 정상적으로 종료되거나 붎필요해지면 구독을 해지할수 있게 재데로 관리한다면 외부에서 별도로 리소스 관리하지 않아도 된다.
 
@@ -392,3 +395,21 @@ setDisposable 메서드로 Disposable 인터페이스 설정 해두면 완료 �
 - 구독 중도에 해지 했을 때 통지하는 처리 작업이 이미 파기한 리소스에 접근하면 에러 발생 <br/>
     -> 리소스 접근할 때 리소스가 파기되었는지 체크하거나 파기됐다면 신속하게 처리를 멈추는 등의 대응이 필요
 - Cancellable/Disposable을 FlowableEmitter/ObservableEmitter에 함께 설정 불가능
+
+## 3.5 배압
+배압이란 데이터 통지량을 제어하는 기능
+Reative Stream에서 필수 기능
+
+|      | Flowable | Observable |
+| ---- | -------- | ---------- |
+| 배압 | O        | X          |
+
+배압은 데이터 받는측이 서로 다른 스레드에서 처리하는데 생산자가 데이터를 통지하는 속도가 데이터를 받는 측의 데이터 처리 속도보다 빠를 때 필요하다.
+
+배압은 데이터가 계속 쌓이다 보면 메모리가 부족해져 시스템이 다운되는 문제를 해결 할수 있는 방법
+
+### 3.5.1 request 메서드
+
+### 3.5.2 observeOn메서드와 배압
+
+### 3.5.3 MissingBackPressureException
