@@ -324,3 +324,199 @@ public final <TOpening,TClosing> Flowable<List<T>> buffer(Flowable<? extends TOp
 - 반환값은 Single (데이터 통지만으로 처리가 끝나며 완료 통지는 하지 않음)
 
   <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/toMultiMap.png" alt="img" style="zoom:50%;" />
+
+
+
+## 4.3 통지데이터를 제한하는 연산자
+
+### 4.3.1 filter
+
+지정한 조건에 맞는 데이터만 통지
+
+조건 판정은 인자로 받는 함수형 인터페이스 (predicate)에서 이루어 진다.
+
+<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/filter.png" alt="img" style="zoom:50%;" />
+
+
+
+### 4.3.2 distinct
+
+이미 통지한 데이터와 같은 데이터를 제외하고 통지
+
+이 메서드는 내부에 HashSet이 있어서 데이터가 같은지를 확인한다.
+
+<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/distinct.png" alt="img" style="zoom:50%;" />
+
+```java
+public final <K> Flowable<T> distinct(Function<? super T,K> keySelector)
+```
+
+keySelector : 받은 데이터와 비교할 데이터를 생성하는 함수형 인터페이스
+
+- 결과롤 통지할 때는 비교용으로 변환한 데이터가 아닌 받은 데이터 그대로 통지한다. 따라서 가변 객체를 비교하는 도중에 객체의 상태가 변경되면 통지 데이터에도 영향이 있으니 주의해야 한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/distinct.key.png" alt="img" style="zoom:33%;" />
+
+
+
+### 4.3.3 distinctUntilChanged
+
+연속된 같은 값의 데이터는 제외하고 통지
+
+<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/distinctUntilChanged.png" alt="img" style="zoom:50%;" />
+
+```java
+public final <K> Flowable<T> distinctUntilChanged(Function<? super T,K> keySelector)
+```
+
+keySelector : 받은 데이터와 비교할 데이터를 생성하는 함수형 인터페이스
+
+- 결과롤 통지할 때는 비교용으로 변환한 데이터가 아닌 받은 데이터 그대로 통지한다. 따라서 가변 객체를 비교하는 도중에 객체의 상태가 변경되면 통지 데이터에도 영향이 있으니 주의해야 한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/distinctUntilChanged.key.png" alt="img" style="zoom:33%;" />
+
+```java
+public final Flowable<T> distinctUntilChanged(BiPredicate<? super T,? super T> comparer)
+```
+
+comparer : 바로 앞서 받은 데이터와 현재 데이터가 같은지를 지정한 방법으로 비교하는 함수형 인터페이스
+
+비교 결과로 true 반환하면 해당데이터는 통지되지 않는다.
+
+
+
+### 4.3.4 take
+
+지정한 개수나 기간까지만 데이터를 통지
+
+- 지정한 개수나 기간에 도달하면 완료를 통지해 처리를 종료한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/take.png" alt="img" style="zoom:50%;" />
+
+### 4.3.5 takeUtil
+
+지정한 조건에 도달할 때까지 통지
+
+- 두가지 메서드가 있다.
+
+- 받은 데이터를 지정한 조건으로 판단해 그 결과가 true가 될 때 까지 데이터를 통지하는 메서드
+
+- 인자로 Flowable이 처음으로 데이터를 통지할 때까지 계속해서 데이터를 통지하는 메서드
+
+- 두 메서드들은 지정한 조건이 되면 완료를 통지해 처리를 종료한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/takeUntil.p.png" alt="img" style="zoom:50%;" />
+
+
+
+### 4.3.6 takeWhile
+
+지정한 조건에 해당할 때만 데이터를 통지
+
+- 받은 데이터가 지정한 조건에 만족하면 데이터를 통지하고, 아니면 완료를 통지하고 처리를 종료
+
+- 판단 결과가 false가 되기 전에 원본  Flowable에서 완료를 통지하면 그대로 완료 통지하고 처리 종료
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/takeWhile.png" alt="img" style="zoom:50%;" />
+
+
+
+### 6.3.7 takeLast
+
+끝에서부터 지정한 조건까지의 데이터 통지
+
+- 원본 Flowable이 완료될 때 마지막 데이터로부터 지정한 개수나 지정한 기간의 데이터만을 세어 통지하는 연산자
+
+- 완료 시점에서 데이터 통지하므로 완료를 통지하지 않는 Flowable은 사용할 수 없다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/takeLast.n.png" alt="img" style="zoom:50%;" />
+
+```java
+public final Flowable<T> takeLast(long count, long time, TimeUnit unit)
+```
+
+- 마지막 통지시점부터 지정한 기간까지의 데이터를 얻고 이중에서 끝에서부터 지정한 개수만큼 데이터를 세어 통지한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/takeLast.tn.png" alt="img" style="zoom:33%;" />
+
+
+
+### 4.3.8 skip
+
+앞에서부터 지정된 범위까지의 데이터는 통지 대상에서 제외
+
+<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/skip.png" alt="img" style="zoom:50%;" />
+
+### 4.3.9 skipUntil
+
+인자 Flowable/Observable이 데이터를 통지할 때까지 데이터 통지를 건너뜀
+
+- 인자로 지정한 Flowable/Observable이 데이터를 통지하면 그때부터 결과 데이터를 통지한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/skipUntil.png" alt="img" style="zoom:50%;" />
+
+### 4.3.10 skipWhile
+
+지정한 조건에 해당할 때는 데이터 통지 제외
+
+- 인자로 지정한 조건이 true일 때는 데이터를 통지하지 않는 연산자
+
+- 한번 통지를 시작하면 또 다시 전송 여부를 판단하지 않는다.
+
+- 판단 결과가 한번도 false되지 않는 채로 원본 생산자의 처리가 완료되면 결과로 완료만 통지하고 처리 종료
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/skipWhile.png" alt="img" style="zoom:50%;" />
+
+### 4.3.11 skipLast
+
+끝에서부터 지정한 범위만큼 데이터 통지 제외
+
+- 원본 Flowable이 통지하는 데이터 중에서 끝에서부터 지정한 범위만큼 데이터를 통지하지 않는 연산자
+
+- 통지는 범위만큼 늦춰 시작하고 원본 통지완료 시점에 결과 통지도 완료한다. -> 마지막 데이터부터 지정한 범위만큼 통지를 건너뛰게 된다.
+
+- 원본 Flowable이 skipLast로 지정한 개수보다 적게 데이터를 통지하거나 지정한 시간보다 짧은 시간에 처리를 완료하면 데이터를 통지하지 않고 완료를 통지한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/skipLast.png" alt="img" style="zoom:50%;" />
+
+### 4.2.12 throttleFirst
+
+데이터 통지후 지정 시간 동안 데이터를 통지하지 않음
+
+- 단기간에 데이터가 대량으로 들어오는 데이터가 모두 필요한 것이 아니라면 이 연산자로 데이터를 쳐낼 수 있다.
+
+- 단, 지정시간내라 하더라도 완료나 에러 통지는 한다
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/throttleFirst.png" alt="img" style="zoom:50%;" />
+
+### 4.3.13 throttleLast/sample
+
+지정한 시간마다 가장 마지막에 통지된 데이터만 통지
+
+<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/throttleLast.png" alt="img" style="zoom:50%;" />
+
+### 4.3.14 throttleWithTimeout/debounce
+
+데이터를 받은 후 일정 기간 안에 다음 데이터를 받지 못하면 현재 데이터를 통지
+
+- 지정 기간에 다음 데이터를 받으면 새로 데이터를 받은 시점부터 다시 지정기간 안에 다음 데이터가 오는지를 확인
+
+- 지정기간 내라 하더라도 완료,에러 통지는 한다.
+
+- 완료 통지되면 마지막으로 통지된 데이터와 함께 완료를 통지하면 에러가 통지되면 에러만 통지한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/throttleWithTimeout.png" alt="img" style="zoom:50%;" />
+
+### 4.3.15 elementAt / elementAtOrError
+
+지정한 위치의 데이터만 통지
+
+- elementAt / elementAtOrError 둘 다 지정한 위치의 데이터만 통지하는 연산자
+
+- elementAt / elementAtOrError 통지할 데이터가 없을 때는 처리 방식이 다름
+
+- elementAt / elementAtOrError 결과로 생성되는 반환 값도 Flowable이 아닌 Single,Maybe 이다
+
+- elementAt 메서드는 인자에 따라 반환값이 바뀌므로 주의해야한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/elementAt.png" alt="img" style="zoom:50%;" />
