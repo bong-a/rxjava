@@ -520,3 +520,171 @@ public final Flowable<T> takeLast(long count, long time, TimeUnit unit)
 - elementAt 메서드는 인자에 따라 반환값이 바뀌므로 주의해야한다.
 
   <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/elementAt.png" alt="img" style="zoom:50%;" />
+
+
+
+## 4.4 Flowable/Observable을 결합하는 연산자
+
+### 4.4.1 merge / mergeDelayError / mergeArray / mergeArrayDelayError / mergeWith
+
+여러개의 Flowable을 하나로 병합하고 동시 실행
+
+-  여러 Flowable에서 받은 데이터를 하나의 Flowable로 통지하는 연산자
+-  merge계열 메서드 사용하면 여러 Flowable의 통지를 하나의 Subscriber로 구독할 수 있음
+- 에러 통지받으면 받은 시점에서 바로 에러 통지
+- 모든 Flowable이 완료될때 완료 통지
+- 인자로 최대 네개 받을 수 있다.
+
+<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/merge.png" alt="img" style="zoom:50%;" />
+
+mergeWith : merge메서드의 인스턴스 메서드처럼 자신의 통지와 인자 Flowable의 통지를 병합
+
+mergeDelayError : 모든 Flowable의 처리가 완료될 때까지 에러통지를 기다린다.
+
+​	<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/mergeDelayError.png" alt="img" style="zoom:33%;" />
+
+mergeArray : 인자를 배열로 받아 네 개이상의 Flowable 전달 할 수 있음 (merge는 최대 네개)
+
+​	<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/merge.io.png" alt="img" style="zoom:33%;" />
+
+mergeArrayDelayError  : 인자 수(4개 이상 가능)가 다르며, mergeDelayError 와 마찬가지로 모든 Flowable의 처리가 완료될 때까지 에러통지를 기다린다.
+
+
+
+### 4.4.2 concat / concatDelayError / concatArray / concatArrayDelayError / concatWith
+
+여러개의 Flowable을 하나씩 실행
+
+- 여러 개의 Flowable을 전달받아 하나의 Flowable로 결합한 후에 <b>순차적</b>으로 실행하는 연산자
+
+- 순차적으로 하나씩 실행되므로 완료되지 않는 Flowable이 포함되면 다음 Flowable이 실행되지 않는다.
+
+- 에러 통지받으면 받은 시점에서 바로 에러 통지
+
+- 인자로 최대 네개 받을 수 있다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/concat.png" alt="img" style="zoom:50%;" />
+
+concatWith : concat메서드의 인스턴스메서드처럼 자신의 통지를 한뒤 인자로 받은 Flowable의 통지를 한다.
+
+concatDelayError: 다른 Flowable의 처리가 완료될 때까지 에러 통지 기다린다.
+
+concatArray : 인자를 배열로 받아 네 개이상의 Flowable 전달 할 수 있음 (concat은 최대 네개)
+
+concatArrayDelayError : 인자 수(4개 이상 가능)가 다르며, concatDelayError와 마찬가지로 모든 Flowable의 처리가 완료될 때까지 에러통지를 기다린다.
+
+
+
+### 4.4.3 concatEager / concatArrayEager
+
+여러 개의 Flowable을 결합해 동시 실행하고 한 건씩 통지
+
+- concat 메서드와 달리 모든 Flowable이 동시 실행되지만 통지는 concat 메서드처럼 첫번째 Flowable의 데이터부터 통지되고 끝나면 순차적으로 두번째 Flowable의 데이터가 통지된다.
+
+- 이전 Flowable이 완료되는 시점에 바로 전까지 캐시에 쌓이 데이터를 통지한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/Flowable.concatArrayEager.png" alt="img" style="zoom:80%;" />
+
+
+
+### 4.4.4 startWith / startWithArray
+
+인자의 데이터를 통지한 후 자신의 데이터를 통지
+
+- 메서드로 생성한 Flowable은 인자의 모든 데이터를 통지한 후에 자신의 모든 데이터를 통지한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/startWith.png" alt="img" style="zoom:50%;" />
+
+### 4.4.5 zip / zipWith
+
+여러 Flowable의 데이터를 모아 새로운 데이터를 생성 통지
+
+- 새로운 데이터는 모든 Flowable에서 동일한 순서(인덱스)의 데이터를 받아 생성한다.
+
+- 따라서 인자로 전달받은 각 Flowable 통지 시점이 다르면 가장 느리게 처리한 Flowable이 데이터를 통지하는 시점에 새로운 데이터가 생성된다.
+
+- 완료 통지 시점은 통지하는 데이터 개수가 가장 적은 인자 Flowable에 맞춘다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/zip.png" alt="img" style="zoom:50%;" />
+
+### 4.4.6 combineLatest / combineLatestDelayError
+
+여러 Flowable에서 데이터를 받을 때마다 새로운 데이터를 생성 통지
+
+- 인자로 받은 여러 Flowable이 데이터를 받는 시점에 각 Flowable이 마지막으로 통지한 데이터를 함수형 인터페이스에 전달하고 이 데이터를 받아 새로 데이터를 생성해 통지하는 연산자
+
+- 처음에는 Flowable이 통지할 데이터를 갖추어질 때까지 기다리지만, 그 이후에는 각 원본 Flowable이 통지할 때마다 새로운 데이터를 생성한다.
+
+- 인자 여러 Flowable 중에서 가장 처리가 느힌 Flowable이 완료를 통지한 시점에 완료를 통지한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/combineLatest.png" alt="img" style="zoom:50%;" />
+
+
+
+## 4.5 Flowable/Observable 상태를 통지하는 연산자
+
+### 4.5.1 isEmpty
+
+Flowable이 통지할 데이터가 있는지 판단
+
+- 결과로  Single 반환
+
+- 결과 통보하는 시점은 완료통지를 받거나 데이터를 통지받는 시점이기 때문에 완료를 통지하지 않는 Flowable에는 사용할 수 없다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/isEmpty.png" alt="img" style="zoom:50%;" />
+
+
+
+### 4.5.2 contains
+
+Flowable이 지정한 데이터를 포함하는지 판단
+
+- 결과로 Single 반환
+
+- 결과 통보하는 시점은 완료통지를 받거나 데이터를 통지받는 시점
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/contains.png" alt="img" style="zoom:50%;" />
+
+
+
+### 4.5.3 all
+
+Flowable의 모든 데이터가 조건에 맞는지 판단
+
+- 결과로 Single 반환
+
+- 통지한 데이터가 조건과 하나라도 다르다면 조건에 맞지 않는 데이터를 받은 시점에 false 통지
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/all.png" alt="img" style="zoom:50%;" />
+
+
+
+### 4.5.4 sequenceEqual
+
+두 Flowable이 같은 순서로 같은 수의 같은 데이터를 통지하는지 판단
+
+- 결과로 Single 반환
+
+- 데이터만 비교하고 통지 시점은 비교하지 않으므로 interval 메서드로 생성한 Flowable의 통지 간격이 다르더라도 조건에 맞으면 true 통지한다
+
+- 모든 데이터가 동일하면 마지막 Flowable이 완료를 통지한 시점에 true를 통지한다.
+
+- 하나라도 데이터가 다르다면 false 통지하며, 조건에 맞지 않는 데이터를 받은 시점에 false를 통지한다.
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/sequenceEqual.png" alt="img" style="zoom:50%;" />
+
+
+
+### 4.5.5 count
+
+Flowable의 데이터 개수 통지
+
+- 결과로 Single 반환
+
+- 데이터 개수 타입은 Long
+
+- 데이터 개수 통지하는 시점은 완료 통지를 받은 시점
+
+  <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/longCount.png" alt="img" style="zoom:50%;" />
+
+  
