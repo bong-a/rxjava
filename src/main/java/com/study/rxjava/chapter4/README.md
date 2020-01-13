@@ -688,3 +688,100 @@ Flowable의 데이터 개수 통지
   <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/longCount.png" alt="img" style="zoom:50%;" />
 
   
+
+
+
+
+
+## 4.6 Flowable/Observable 데이터를 집계하는 연산자
+
+### 4.6.1 reduce/reduceWith
+
+Flowable의 데이터를 계산하고 최종 집계 결과만 통지
+
+- reduceWith : reduce가 인자로 초깃값 데이터를 받는 것과 달리 reduceWith메서드는 인자로 초깃값을 생성하는 함수형 인터페이스를 받는다.
+
+```java
+	Maybe<T> reduce(BiFunction<T,T,T> reducer)
+	<R> Single<R> reduce(R seed, BiFunction<R,? super T,R> reducer)
+```
+
+ <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/reduce.png" alt="img" style="zoom:50%;" /> 
+
+ <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/reduceSeed.png" alt="img" style="zoom:50%;" /> 
+
+
+
+### 4.6.2 scan
+
+Flowable의 데이터를 계산하고 각 계산 결과를 통지
+
+- 원본 Flowable이 통지한 데이터를 인자의 함수형 인터페이스를 사용해 집계하는 연산자
+
+- 계산할 때마다 생성되는 결괏값을 통지한다.
+
+- 중간결과를 통지하지 않고 최종 집계 결과만 통지 : reduce
+
+- 중간 결과를 통지 : scan
+
+   <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/scan.png" alt="img" style="zoom:50%;" /> 
+
+
+
+## 4.7 유틸리티 연산자
+
+### 4.7.1 repeat
+
+데이터 통지를 처음부터 반복
+
+원본 Flowable이 처리를 완료하면 데이터 통지를 처음부터 반복하게 하는 연산자
+
+- 인자가 없으면 완료하지 않고 데이터를 반복 통지
+
+- 인자가 있으면 인자로 지정한 숫자만큼 데이터를 반복 통지
+
+   <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/repeat.o.png" alt="img" style="zoom:50%;" /> 
+
+### 4.7.2 repeatUntil
+
+지정한 조건이 될 때까지 데이터 통지 반복
+
+- 조건은 인자 없이 boolean 값을 반환하는 메서드를 가지는 함수형 인터페이스로 지정
+- 조건을 판단하는 시점은 원본 Flowable이 완료를 통지하는 시점
+- 판단 결과가 false면 통지를 반복하고 true면 완료를 통지하고 처리를 종료한다.
+
+ 
+
+### 4.7.2 repeatWhen
+
+반복 처리 정의 및 통지 반복
+
+- 지정한 시점까지 원본 Flowable의 통지를 반복하는 연산자
+
+- 반복여부는 인자인 함수형 인터페이스에서 판단
+
+- 함수형 인터페이스는 완료를 통지하는 원본 Flowable을 인자로 받고 이를 변환해 반한한다.
+
+- 이때 변환된 Flowable이 데이터를 통지하면 원본 Flowable의 데이터통지를 반복하고, 변환된 Flowable이 완료를 통지하면 결과로 완료를 통지하고 처리를 끝낸다.
+
+- 함수형 인터페이스가 빈 Flowable을 반환하면 데이터 통지 없이 완료 통지하고 종료한다.
+
+- 반복시점이 변환된 Flowable이 데이터를 통지한 시점이므로 delay메서드로 통지를 지연하면 반복 통지 시작을 늦출 수 있다.
+
+- 반한된 Flowable이 원본 Flowable과 다른 스레드에서 작동하면 반복 도중에 완료를 통지할 수 있으므로 주의해야한다.
+
+   <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/repeatWhen.f.png" alt="img" style="zoom:50%;" /> 
+
+### 4.7.4 delay
+
+데이터 통지 시점 지연
+
+ 
+
+<img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/delay.png" alt="img" style="zoom:50%;" />
+
+### 4.7.5 delaySubscription
+
+처리 시작 지연
+
+ <img src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/delaySubscription.png" alt="img" style="zoom:50%;" /> 
